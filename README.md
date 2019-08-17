@@ -13,6 +13,7 @@ When `@mixins` decorator is called without arguments, apply base class method co
 ### @before method( a, b, ... ){ ... }
 
 Execute the given function before the method will be called.
+When called with argument `@before( fun )`, attaches the given function as before combination while treating the method as primary.
 
 ```javascript
 @mixins( Events )
@@ -32,7 +33,7 @@ class B {
 
 ### @after method( a, b, ... ){ ... }
 
-Execute the given function after the method will be called.
+Execute the given function after the method will be called. Works similar to before.
 
 ```javascript
 class A {
