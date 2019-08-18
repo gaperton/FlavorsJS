@@ -59,9 +59,10 @@ export function registerCombination( name : string, mixer : Mixer, sealer : Seal
  * @param method 
  */
 export function mixMethod( mixture : Mixture, combination : Combination, method : Function ){
-    const prev = mixture[ combination ];
-    mixture[ combination ] = prev ?
-        mixers[ combination ]( prev, method ) :
+    const targetMethod = mixture[ combination ];
+
+    mixture[ combination ] = targetMethod ?
+        mixers[ combination ]( method, targetMethod ) :
         method;
 }
 
@@ -83,7 +84,9 @@ export function sealMethod( mixture : Mixture ){
     let method : Function = dummyPrimaryMethod;
 
     for( let i = 0; i < mixture.length; i++ ){
-        method = sealers[ i ]( method, mixture[ i ] );
+        if( mixture[ i ] ){
+            method = sealers[ i ]( method, mixture[ i ] );
+        }
     }
 
     return method;

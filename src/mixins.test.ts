@@ -20,6 +20,24 @@ class ComplexMixin {
     }
 }
 
+describe( 'simple mixins', ()=>{    
+    it( 'properly merge simple mixins', () => {
+
+        interface Target extends SimpleMixin {}
+        @mixins( SimpleMixin )
+        class Target {
+            b(){
+                return 'Target';
+            }
+        }
+
+        const t = new Target();
+
+        expect( t.b() ).toEqual( 'Target' );
+        expect( t.a() ).toEqual( 'SimpleMixin' );
+    })
+});
+
 function anotherComplexMixin(){
     return "AnotherComplexMixin";
 }

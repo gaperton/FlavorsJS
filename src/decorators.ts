@@ -6,7 +6,7 @@ function getMethodMixture( proto, mixtures, name ){
 
     // Method is primary. Register it.
     const mixture = getMixture( mixtures, name );
-    mixMethod( mixture, Combinations.primary, proto[ name ] );
+    mixMethod( mixture, Combinations.PRIMARY, proto[ name ] );
     return mixture;
 }
 
@@ -69,6 +69,6 @@ function methodDecorator( combination : Combination ) : any
     }
 }
 
-export const after = methodDecorator( Combinations.after );
-export const before = methodDecorator( Combinations.before );
-export const around = methodDecorator( Combinations.around );
+export const after = methodDecorator( Combinations.AFTER );
+export const before = methodDecorator( Combinations.BEFORE );
+export const around = methodDecorator( Combinations.AROUND );
