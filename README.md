@@ -16,9 +16,31 @@ Execute the given function before the method will be called.
 When called with argument `@before( fun )`, attaches the given function as before combination while treating the method as primary.
 
 ```javascript
+class A {
+    ...
+
+    @before componentWillMount(){
+        this.something = "Hi";
+    }
+}
+
+@mixins( A )
+class B {
+    componentWillMount(){
+        this.state = { text : this.something };
+    }
+    ...
+}
+```
+
+### @after method( a, b, ... ){ ... }
+
+Execute the given function after the method will be called. Works similar to before.
+
+```javascript
 @mixins( Events )
 class A {
-    @before componentWillUnmount(){
+    @after componentWillUnmount(){
         this.stopListening()
     }
 }
@@ -31,31 +53,9 @@ class B {
 }
 ```
 
-### @after method( a, b, ... ){ ... }
-
-Execute the given function after the method will be called. Works similar to before.
-
-```javascript
-class A {
-    ...
-
-    @after componentWillMount(){
-        console.log( this.state );
-    }
-}
-
-@mixins( A )
-class B {
-    componentWillMount(){
-        this.state = { text : "Hi" };
-    }
-    ...
-}
-```
-
 ### @around method( a, b, ... ){ ... }
 
-Wrap the method call into the given function.
+Wrap the method call into the given function. The original method can be called with `applyNextMethod()` and `callNextMethod( a, b, ... )`.
 
 ```javascript
 class A {
@@ -63,7 +63,7 @@ class A {
 
     @around(
         function( nextProps ){
-            return callNextMethod( nextProps ) && nextProps.a !== this.props.a;
+            return applyNextMethod() && nextProps.a !== this.props.a;
         }
     )
     shouldComponentUpdate( nextProps ){
@@ -80,6 +80,8 @@ class B {
     }
 }
 ```
+
+## TODO: Properties combinations
 
 ### @afterSet( fun ) prop
 
@@ -109,8 +111,28 @@ Execute the given function before the value has changed.
 ```javascript
 class Observer {
     @beforeSet( function( x ){
-        console.log( `I see you, ${ x }!` );
-        return x / 10;
+        console.log( `I see you last time, ${ x }!` );
+    }) value;
+}
+
+@mixins( Observer )
+class B {
+    ...
+
+    doSomething(){
+        this.value = 5; // Will print "I see you, 5"
+    }
+}
+```
+
+### @aroundSet( fun ) prop
+
+Tap into the property modification process.
+
+```javascript
+class Observer {
+    @aroundSet( function( x ){
+        callNextFunction( Number( x ) );
     }) value;
 }
 
