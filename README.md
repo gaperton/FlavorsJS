@@ -75,7 +75,7 @@ class A {
 class B {
     ...
 
-    shoulComponentUpdate( nextProps ){
+    shouldComponentUpdate( nextProps ){
         return nextProps.b !== this.props.b;
     }
 }
