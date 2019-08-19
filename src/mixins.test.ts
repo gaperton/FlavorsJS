@@ -221,14 +221,18 @@ describe( 'Two base classes', () => {
             @before( testSequence( 1 ) )
             @around( testAround( 4 ) )
             @after( testSequence( 10 ) )
-            test(){}
+            test(){
+                testSequence( 'never' ).call( this )
+            }
         }
     
         class B {
             @before( testSequence( 2 ) )
             @around( testAround( 5 ) )
             @after( testSequence( 9 ) )
-            test(){}
+            test(){
+                testSequence( 'never' ).call( this )
+            }
         }
     
         @mixins( A, B )
