@@ -38,6 +38,13 @@ describe( 'mixins as standalone classes', () => {
 
         expect( s.c() ).toEqual( 'ComplexMixin' );
     });
+
+    it( 'executes @before in a proper order', () => {
+        class Test {
+            before = [];
+            @before( function(){ this.before.})
+        }
+    })
 });
 
 describe( 'simple target', ()=>{    

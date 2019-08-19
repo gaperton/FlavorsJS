@@ -9,6 +9,14 @@ export function canApplyMixin( target, source ){
 
     if( notApplied ) appliedMixins.push( source );
 
+    if( !target.mixinsConstructors ){
+        target.mixinsConstructors = function(){
+            for( let Mixin of this.__appliedMixins__ ){
+                Mixin.apply( this, arguments );
+            }
+        }
+    }
+
     return notApplied;
 }
 

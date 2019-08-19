@@ -19,6 +19,9 @@ export function mixins( ...Mixins : Function[] ){
         for( let Source of Mixins ){
             const source = Source.prototype;
 
+            // BUG: Need to disable cachinf of the pre-merged mixtures,
+            // and traverse all the source mixins every time to solve diamond problem.
+            // __appliedMixins_ must contain the whole graph of mixins.
             if( canApplyMixin( target, source ) ){
                 const sourceMixtures = getAllMixtures( source );
 
