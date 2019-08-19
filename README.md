@@ -1,6 +1,6 @@
 # Flavors object model for JS
 
-<write something about origins of Flawors and problems it solves>
+write something about origins of Flawors and problems it solves
 
 ## Design considerations
 
