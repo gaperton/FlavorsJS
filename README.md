@@ -1,4 +1,11 @@
-# TODO
+# Flavors object model for JS
+
+<write something about origins of Flawors and problems it solves>
+
+## Design considerations
+
+- It must work with both JavaScript and TypeScript naturally
+- It must augment the standard JS class models, not substitute it.
 
 ## API
 
