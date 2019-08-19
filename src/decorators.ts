@@ -16,7 +16,7 @@ export function mixins( ...Mixins : Function[] ){
         const target = Target.prototype,
             targetMixtures = getAllMixtures( target );
         
-        for( let Source of Mixins ){
+        for( let Source of Mixins.reverse() ){
             const source = Source.prototype;
 
             // BUG: Need to disable cachinf of the pre-merged mixtures,
