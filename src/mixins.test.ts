@@ -180,26 +180,48 @@ describe( 'simple target', ()=>{
     });
 });
 
-function anotherComplexMixin(){
-    return "AnotherComplexMixin";
-}
+describe( 'diamind problem', () => {
+    it( 'never merge mixins twice', () => {
+        class A {
+            log : string
 
-class AnotherComplexMixin {
-    @before( anotherComplexMixin )
-    a(){ return 'ComplexMixin'; }
+            @before a(){
+                this.log += 'A';
+            }
+        }
 
-    @after
-    b(){ return 'ComplexMixin'; }
+        @mixins( A )
+        class B {
+            log : string
 
-    @around
-    c(){
-        callNextMethod();
-        return 'ComplexMixin';
-    }
-}
+            @before a(){
+                this.log += 'B';
+            }
+        }
 
-interface SimpleTarget extends SimpleMixin, ComplexMixin {}
-@mixins( SimpleMixin, ComplexMixin )
-class SimpleTarget {
-    a(){ return 'SimpleTarget'; }
-}
+        @mixins( A )
+        class C {
+            log : string
+
+            @before a(){
+                this.log += 'C';
+            }
+        }
+
+        @mixins( B, C )
+        class D {
+            log = ''
+
+            @before a(){
+                this.log += 'D';
+            }
+        }
+
+        const d = new D();
+
+        d.a();
+
+        expect( d.log ).toEqual( 'ABCD' );
+
+    })
+})
