@@ -40,10 +40,85 @@ describe( 'mixins as standalone classes', () => {
     });
 
     it( 'executes @before in a proper order', () => {
+        class A {
+            before : number[]
+            
+            @before test(){
+                this.before.push( 1 )
+            }
+        }
+
+        @mixins( A )
         class Test {
             before = [];
-            @before( function(){ this.before.})
+            
+            @before( function(){ this.before.push( 2 ) })
+            @before( function(){ this.before.push( 3 ) })
+            test(){
+                return 'test'
+            }
         }
+
+        const test = new Test();
+        expect( test.test() ).toEqual( 'test' );
+        expect( test.before ).toEqual( [ 1, 2, 3 ] );
+    });
+
+    it( 'executes @after in a reverse order', () => {
+        class A {
+            after : number[]
+            
+            @after test(){
+                this.after.push( 1 )
+            }
+        }
+
+        @mixins( A )
+        class Test {
+            after = [];
+            
+            @after( function(){ this.after.push( 2 ) })
+            @after( function(){ this.after.push( 3 ) })
+            test(){
+                return 'test'
+            }
+        }
+
+        const test = new Test();
+        expect( test.test() ).toEqual( 'test' );
+        expect( test.after ).toEqual( [ 3,2,1 ] );
+    })
+
+    it( 'executes @around in a proper order', () => {
+        class A {
+            count : number[]
+            
+            @around test(){
+                this.count.push( 1 )
+                return callNextMethod();
+            }
+        }
+
+        @mixins( A )
+        class Test {
+            count = [];
+            
+            @around( function(){
+                this.count.push( 2 )
+                return callNextMethod()
+            })
+            @around( function(){
+                this.count.push( 3 )
+                return callNextMethod()
+            })
+            test(){
+                return 'test'
+            }
+        }
+
+        const test = new Test();
+        expect( test.test() ).toEqual( 'test' );
+        expect( test.count ).toEqual( [ 1, 2, 3 ] );
     })
 });
 

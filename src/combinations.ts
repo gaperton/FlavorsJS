@@ -8,30 +8,63 @@ registerCombination( 'PRIMARY',
 registerCombination( 'AROUND',
     ( prev, next ) =>
         function( ...args ){
-            const prevContext = context;
-            context = [ this, prev, args ];
+            const prevContext = aroundContext,
+                self = this;
 
-            const res = next.apply( this, args );
+            const nextContext : any = [
+                function callNext( args ){
+                    aroundContext = prevContext;
+                    const res = next.apply( self, args );
+                    aroundContext = nextContext;
+                    return res;
+                },
+                args
+            ]
+                
+            aroundContext = nextContext;
             
-            context = prevContext;
+            const res = prev.apply( this, args );
+            
+            aroundContext = prevContext;
+
+            return res;
+        },
+
+    ( method, arounds ) =>
+        function( ...args ){
+            const prevContext = aroundContext,
+                self = this;
+
+            const nextContext : any = [
+                function callNext( args ){
+                    aroundContext = prevContext;
+                    const res = method.apply( self, args );
+                    aroundContext = nextContext;
+                    return res;
+                },
+                args
+            ]
+
+            aroundContext = nextContext;
+
+            const res = arounds.apply( this, args );
+            
+            aroundContext = prevContext;
 
             return res;
         }
 );
 
-type CallContext = [ any, Function, any[] ];
-let context : CallContext;
+let aroundContext : [ Function, object ];
 
 // Apply the next method in `@around` chain with a given arguments.
 export function callNextMethod( ...args ){
-    const [ self, method ] = context;
-    return method.apply( self, args );
+    return aroundContext[ 0 ]( args );
 }
 
 // Apply the next method in `@around` chain with the original arguments.
 export function applyNextMethod(){
-    const [ self, method, args ] = context;
-    return method.apply( self, args );
+    return aroundContext[ 0 ]( aroundContext[ 1 ] );
 }
 
 registerCombination( 'BEFORE',
