@@ -4,8 +4,11 @@ write something about origins of Flawors and problems it solves
 
 ## Design considerations
 
-- It must work with both JavaScript and TypeScript naturally
+While admiring the awesome work done by Howard I. Cannon on Flavors for MIT LISP Machine and the LISP community in general during the design of CLOS, we don't have an intent to dramatically change the way how JS developer write his code.
+
+- It must work with both JavaScript and TypeScript naturally, being felt like an evolutionary step forward from traditional JS classes and mixins.
 - It must augment the standard JS class models, not substitute it.
+- It must utilize TypeScript typeckecking to a maximum possible degree.
 
 ## API
 
