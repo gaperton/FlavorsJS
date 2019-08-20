@@ -1,5 +1,7 @@
 import { mixins, before, after, doAfter, doAround, doBefore, around, callNextMethod } from './index'
 import { applyNextMethod } from './combinations';
+import { isMethod } from '@babel/types';
+import { superMixins } from './mixture';
 
 class SimpleMixin {
     a(){ return 'SimpleMixin'; }
@@ -311,7 +313,7 @@ describe( 'simple target', ()=>{
     });
 });
 
-describe( 'diamind problem', () => {
+describe( 'diamond problem', () => {
     it( 'never merge mixins twice', () => {
         class A {
             log : string
@@ -356,3 +358,82 @@ describe( 'diamind problem', () => {
 
     })
 })
+
+describe( 'design patterns', () => {
+    it( 'attach the trace hook in a subtype', () => {
+        class Base {
+            method(){
+                return 'Base';
+            }
+        }
+
+        @mixins( Base )
+        class Subtype {
+            trace = [];
+
+            @after method(){
+                this.trace.push( 'Subtype' );
+            }
+        }
+
+        const t = new Subtype();
+        expect( t.method() ).toEqual( 'Base' );
+        expect( t.trace ).toEqual( [ 'Subtype' ]);
+    } );
+
+    it( 'attach the trace hook in a base type', () => {
+        class Base {
+            trace = [];
+
+            @after method(){
+                this.trace.push( 'Base' );
+            }
+        }
+
+        interface Subtype extends Base {}
+        @mixins( Base )
+        class Subtype {
+            constructor(){
+                superMixins( this );
+            }
+
+            method(){
+                return 'Subtype';
+            }
+        }
+
+        const t = new Subtype();
+        expect( t.method() ).toEqual( 'Subtype' );
+        expect( t.trace ).toEqual( [ 'Base' ]);
+    } );
+
+    it( 'react mixin', () => {
+        class ComponentMixin {
+            _newMember : string
+
+            @after componentWillMount(){
+                this._newMember = 'my private state';
+            }
+
+            @around render(){
+                const nodes = callNextMethod();
+
+                return '<div>' + nodes + '</div>';
+            }
+        }
+
+        interface ReactComponent extends ComponentMixin{}
+        @mixins( ComponentMixin )
+        class ReactComponent {
+            render(){
+                return "something"
+            }
+        }
+
+        const t = new ReactComponent();
+
+        t.componentWillMount();
+        expect( t._newMember ).toEqual( 'my private state' );
+        expect( t.render() ).toEqual( '<div>something</div>' );
+    })
+});

@@ -70,6 +70,14 @@ class B {
 
 The general form of `@after`.
 
+## Initialization
+
+### superMixins( this, a, b, ... )
+
+Call all the mixins constrtuctors with a given set of arguments. Similar to the standard `super()`.
+
+## `around` method combination
+
 ### @around method( a, b, ... ){ ... }
 
 Wrap the method call into the given function. The original method can be called with `applyNextMethod()` and `callNextMethod( a, b, ... )`.
@@ -101,6 +109,14 @@ class B {
 ### @doAround( aspect ) method( a, b, ... ){ ... }
 
 The general form of `@around`.
+
+### applyNextMethod()
+
+Call the next method in chain with the original set of the arguments.
+
+### callNextMethod( a, b, ... )
+
+Call the next method in chain with a different set of arguments.
 
 ## TODO: Properties combinations
 

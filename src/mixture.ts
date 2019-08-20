@@ -33,17 +33,18 @@ export function unfoldMixins( target, Mixins : ( object | Function )[] ) : any[]
         }    
     }
 
+    target.__constructors__ = Mixins
+        .map( x => typeof x === 'function' ? x : x.constructor )
+        .filter( x => x );
+
     return appliedMixins;
+}
 
-    /* TODO: think if we need to have this.
-
-    if( !target.callConstructors ){
-        target.callConstructors = function(){
-            for( let Mixin of this.__appliedMixins__ ){
-                Mixin.apply( this, arguments );
-            }
-        }
-    }*/
+// Call all mixins constructors.
+export function superMixins( self, ...args ){
+    for( let Ctor of self.__constructors__ ){
+        Ctor.apply( self, args );
+    }
 }
 
 type MethodsMixtures = {
