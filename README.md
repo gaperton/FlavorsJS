@@ -1,4 +1,6 @@
-# Flavors object model for JS
+# Flavors object model for JS (development preview)
+
+Mixin engine for modern JS and TypeScript inspired by Howard I. Cannon work for MIT Lisp Machine as described in [Flavors: A non-hierarchical approach to object-oriented programming](http://www.softwarepreservation.org/projects/LISP/MIT/nnnfla1-20040122.pdf).
 
 write something about origins of Flawors and problems it solves
 
