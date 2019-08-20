@@ -1,4 +1,4 @@
-import { canApplyMixin, Combination, Combinations, getAllMixtures, getMixture, mergeMixture, mixMethod, sealMethod } from './mixture';
+import { Combination, Combinations, getAllMixtures, getMixture, mergeMixture, mixMethod, sealMethod, unfoldMixins, cloneAllMixtures } from './mixture';
 
 function getMethodMixture( proto, mixtures, name ){
     const cached = mixtures[ name ];
@@ -14,28 +14,27 @@ function getMethodMixture( proto, mixtures, name ){
 export function mixins( ...Mixins : Function[] ){
     return Target => {
         const target = Target.prototype,
-            targetMixtures = getAllMixtures( target );
-        
-        for( let Source of Mixins.reverse() ){
-            const source = Source.prototype;
+            targetMixtures = cloneAllMixtures( target );
 
+        // Create flattened list of all unique mixins.
+        const appliedMixins = unfoldMixins( target, Mixins );
+        
+        for( let source of appliedMixins.reverse() ){
             // BUG: Need to disable cachinf of the pre-merged mixtures,
             // and traverse all the source mixins every time to solve diamond problem.
             // __appliedMixins_ must contain the whole graph of mixins.
-            if( canApplyMixin( target, source ) ){
-                const sourceMixtures = getAllMixtures( source );
+            const sourceMixtures = getAllMixtures( source );
 
-                for( let name of Object.getOwnPropertyNames( source ) ){
-                    const desc = Object.getOwnPropertyDescriptor( source, name );
-                    
-                    if( typeof desc.value === 'function' && name !== 'constructor' ){
-                        const targetMixture = getMethodMixture( target, targetMixtures, name ),
-                              sourceMixture = getMethodMixture( source, sourceMixtures, name );
+            for( let name of Object.getOwnPropertyNames( source ) ){
+                const desc = Object.getOwnPropertyDescriptor( source, name );
+                
+                if( typeof desc.value === 'function' && name !== 'constructor' ){
+                    const targetMixture = getMethodMixture( target, targetMixtures, name ),
+                            sourceMixture = getMethodMixture( source, sourceMixtures, name );
 
-                        mergeMixture( targetMixture, sourceMixture );
-                        target[ name ] = sealMethod( targetMixture );
-                    }   
-                }
+                    mergeMixture( targetMixture, sourceMixture );
+                    target[ name ] = sealMethod( targetMixture );
+                }   
             }
         }    
     }

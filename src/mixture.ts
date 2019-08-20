@@ -3,21 +3,47 @@ export function getAllMixtures( proto ) : MethodsMixtures {
     return proto.__mixtures__ || ( proto.__mixtures__ = {} );
 }
 
-export function canApplyMixin( target, source ){
-    const appliedMixins = target.__appliedMixins__ || ( target.__appliedMixins__ = [] ),
-        notApplied = appliedMixins.indexOf( source ) < 0;
+export function cloneAllMixtures( proto ) : MethodsMixtures {
+    const copy = {},
+        source = getAllMixtures( proto );
 
-    if( notApplied ) appliedMixins.push( source );
+    for( let name in source ){
+        copy[ name ] = source[ name ].slice();
+    }
 
-    if( !target.mixinsConstructors ){
-        target.mixinsConstructors = function(){
+    return copy;
+}
+
+export function unfoldMixins( target, Mixins : ( object | Function )[] ) : any[] {
+    const appliedMixins = target.__appliedMixins__ || ( target.__appliedMixins__ = [] );
+
+    for( let Mixin of Mixins ){
+        const source = typeof Mixin === 'function' ? Mixin.prototype : Mixin;
+
+        if( appliedMixins.indexOf( source ) < 0 ) {
+            const sourceMixins = source.__appliedMixins__ || [];
+    
+            for( let sourceOfSource of sourceMixins ){
+                if( appliedMixins.indexOf( sourceOfSource ) < 0 ){
+                    appliedMixins.push( sourceOfSource );
+                }
+            }   
+    
+            appliedMixins.push( source );
+        }    
+    }
+
+    return appliedMixins;
+
+    /* TODO: think if we need to have this.
+
+    if( !target.callConstructors ){
+        target.callConstructors = function(){
             for( let Mixin of this.__appliedMixins__ ){
                 Mixin.apply( this, arguments );
             }
         }
-    }
-
-    return notApplied;
+    }*/
 }
 
 type MethodsMixtures = {
