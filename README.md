@@ -22,8 +22,7 @@ When `@mixins` decorator is called without arguments, apply base class method co
 
 ### @before method( a, b, ... ){ ... }
 
-Execute the given function before the method will be called.
-When called with argument `@before( fun )`, attaches the given function as before combination while treating the method as primary.
+Execute the given function before the method will be called. Equivalent to `@doBefore( function( a, b, ... ){...} ) method(){}`
 
 ```javascript
 class A {
@@ -42,6 +41,10 @@ class B {
     ...
 }
 ```
+
+### @doBefore( aspect ) method( a, b, ... ){ ... }
+
+The general form of `@before` attaching the before aspect to the given primary method.
 
 ### @after method( a, b, ... ){ ... }
 
@@ -62,6 +65,10 @@ class B {
     }
 }
 ```
+
+### @doAfter( aspect ) method( a, b, ... ){ ... }
+
+The general form of `@after`.
 
 ### @around method( a, b, ... ){ ... }
 
@@ -90,6 +97,10 @@ class B {
     }
 }
 ```
+
+### @doAround( aspect ) method( a, b, ... ){ ... }
+
+The general form of `@around`.
 
 ## TODO: Properties combinations
 
