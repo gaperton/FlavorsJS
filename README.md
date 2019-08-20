@@ -70,6 +70,46 @@ class B {
 
 The general form of `@after`.
 
+## Interaction with extended classes
+
+That can create a mess when combined with inheritance. Possible options are:
+
+- Don't work with inheritance at all. Throw exceptions if inheritance is detected. That would seriously restrict FlavorJS applications.
+- Treat inheritance as a special case of mixins, preserving the FlavorsJS semantic.
+
+We're going to explore the second option.
+
+To do that, we need to inspect the target's prototype if it have another prototype different from `Object.prototype`. And if it does,
+perform the merge in a same way we do with mixins.
+
+(?!)
+What if we will have a base class with a constructor performing the lazy application of the mixins across the prototype chain?
+It would guarantee from errors.
+(?!)
+
+An open question is what to do with members visible across the prototype chain. The valid behavior would be to traverse them, as it seems to be the single correct option to work with traditional class hierarchies.
+
+There's a special case where one of the base classes in a chain has mixins, was extended with a plain class, and then is extended with mixins.
+
+### Test cases
+
+#### Plain base class A
+
+- A extended by B with aspects. (?) Should aspects decorators resolve base class methods immediately (?)
+- B extends A, C extends B with aspects.
+- A extended by B with mixins.
+
+#### Base class with aspects
+
+- A with aspects extended by plain class B
+- A with aspects extended by class B with aspects
+- A with aspects extended by class B with mixins
+
+#### Base class with mixins
+
+- A extended by B with mixins
+- A extended by B with aspects
+
 ## Initialization
 
 ### superMixins( this, a, b, ... )
@@ -120,13 +160,13 @@ Call the next method in chain with a different set of arguments.
 
 ## TODO: Properties combinations
 
-### @afterSet( fun ) prop
+### @doAfterSet( fun ) prop
 
 Execute the given function after the value has changed.
 
 ```javascript
 class Observer {
-    @afterSet( function(){
+    @doAfterSet( function(){
         console.log( `I see you, ${ this.value }!` );
     }) value;
 }
@@ -141,13 +181,13 @@ class B {
 }
 ```
 
-### @beforeSet( fun ) prop
+### @doBeforeSet( fun ) prop
 
 Execute the given function before the value has changed.
 
 ```javascript
 class Observer {
-    @beforeSet( function( x ){
+    @doBeforeSet( function( x ){
         console.log( `I see you last time, ${ x }!` );
     }) value;
 }
@@ -162,13 +202,13 @@ class B {
 }
 ```
 
-### @aroundSet( fun ) prop
+### @doAroundSet( fun ) prop
 
 Tap into the property modification process.
 
 ```javascript
 class Observer {
-    @aroundSet( function( x ){
+    @doAroundSet( function( x ){
         callNextFunction( Number( x ) );
     }) value;
 }
