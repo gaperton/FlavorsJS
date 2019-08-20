@@ -43,31 +43,32 @@ export function mixins( ...Mixins : Function[] ){
 // Chainable decorator is the decorator with function as parameter.
 // @before( fun1 ) @before( fun2 ) method(){ ... }
 // In this case the method itself is a primary method and must be registered so.
-const chainableDecorator = ( combination : Combination, fun : Function ) =>
-    ( proto : object, name : string, desc : PropertyDescriptor ) => {
-        const mixtures = getAllMixtures( proto ),
-            mixture = getMethodMixture( proto, mixtures, name );
+function aspectDecorator( combination : Combination ){
+    return ( fun : Function ) =>
+        ( proto : object, name : string, desc : PropertyDescriptor ) => {
+            const mixtures = getAllMixtures( proto ),
+                mixture = getMethodMixture( proto, mixtures, name );
 
-        mixMethod( mixture, combination, fun );
-        desc.value = sealMethod( mixture );
-
-        return desc;    
-    }
-
-function methodDecorator( combination : Combination ) : any
-{
-    return ( arg : Function | object, name? : string, desc? : PropertyDescriptor ) => {
-        if( typeof arg === 'function' ){
-            return chainableDecorator( combination, arg );
-        }
-        else{
-            const mixtures = getAllMixtures( arg ),
-                mixture = getMixture( mixtures, name );
-
-            mixMethod( mixture, combination, desc.value );
+            mixMethod( mixture, combination, fun );
             desc.value = sealMethod( mixture );
-            return desc;
+
+            return desc;    
         }
+} 
+
+export const doAfter = aspectDecorator( Combinations.AFTER );
+export const doBefore = aspectDecorator( Combinations.BEFORE );
+export const doAround = aspectDecorator( Combinations.AROUND );
+    
+function methodDecorator( combination : Combination )
+{
+    return ( object, name? : string, desc? : PropertyDescriptor ) => {
+        const mixtures = getAllMixtures( object ),
+            mixture = getMixture( mixtures, name );
+
+        mixMethod( mixture, combination, desc.value );
+        desc.value = sealMethod( mixture );
+        return desc;
     }
 }
 
