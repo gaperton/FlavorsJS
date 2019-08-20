@@ -1,4 +1,5 @@
 import { mixins, before, after, around, callNextMethod } from './index'
+import { applyNextMethod } from './combinations';
 
 class SimpleMixin {
     a(){ return 'SimpleMixin'; }
@@ -27,58 +28,115 @@ class ComplexMixin {
     }
 }
 
+class TestMixin {
+    sequence : any[]
+    
+    hasSequence( arr ){
+        expect( this.sequence ).toEqual( arr );
+        return this;
+    }
+
+    cleanup(){
+        this.sequence = [];
+        return this;
+    }
+}
+
+function testSequence( label ){
+    return function(){
+        this.sequence = ( this.sequence || [] ).concat([ label ]);
+    }
+}
+
+function testAround( label ){
+    return function(){
+        this.sequence = ( this.sequence || [] ).concat([ label ]);
+
+        const next = applyNextMethod(),
+             arr = Array.isArray( next ) ? next : [ next ];
+        return [ label, ...arr ];
+    }
+}
+
 describe( 'mixins as standalone classes', () => {
-    it( '@before, @after, and @around methods has empty body', () => {
-        const s = new ComplexMixin();
-        expect( s.a() ).toEqual( void 0 );
-        expect( s.before ).toEqual( [ 'ComplexMixin'] );
+    it( 'Default @before, @after, and @around methods has empty body', () => {
+        class Test extends TestMixin {
+            @after a(){
+                testSequence( 1 ).call( this );
+            }
 
-        expect( s.b() ).toEqual( void 0 );
-        expect( s.after ).toEqual( [ 'ComplexMixin'] );
+            @before b(){
+                testSequence( 2 ).call( this );
+            }
 
-        expect( s.c() ).toEqual( 'ComplexMixin' );
-    });
-
-    it( 'executes @before in a proper order', () => {
-        class A {
-            before : number[]
-            
-            @before test(){
-                this.before.push( 1 )
+            @around ar(){
+                return testAround( 3 ).call( this );
             }
         }
 
-        @mixins( A )
-        class Test {
-            before = [];
-            
-            @before( function(){ this.before.push( 2 ) })
-            @before( function(){ this.before.push( 3 ) })
+        const s = new Test();
+        expect( s.a() ).toEqual( void 0 );
+        expect( s.b() ).toEqual( void 0 );
+        expect( s.ar() ).toEqual( [ 3, undefined ] );
+
+        s.hasSequence( [ 1, 2, 3 ] );
+    });
+
+    it( '@before and after are executed in order', () => {
+        class Test extends TestMixin {
+            @after( testSequence( 8 ) )
+            @before( testSequence( 1 ) )
+            @after( testSequence( 7 ) )
+            @before( testSequence( 2 ) )
+            @after( testSequence( 6 ) )
+            @before( testSequence( 3 ) )
+
+            @around( testAround( 4 ) )
+            @around( testAround( 5 ) )
+
             test(){
-                return 'test'
+                return "test";
             }
         }
 
         const test = new Test();
-        expect( test.test() ).toEqual( 'test' );
-        expect( test.before ).toEqual( [ 1, 2, 3 ] );
+        expect( test.test() ).toEqual( [ 4, 5, "test" ] );
+        test.hasSequence( [ 1, 2, 3, 4, 5, 6, 7, 8 ]);
+    });
+});
+
+describe( 'single base class', () => {
+    it( 'executes @before in a proper order', () => {
+        class A {
+            @before test(){
+                testSequence( 1 ).call( this );
+            }
+        }
+
+        @mixins( A )
+        class Test extends TestMixin {
+            @before( testSequence( 2 ) )
+            @before test(){
+                testSequence( 3 ).call( this );
+            }
+        }
+
+        const test = new Test();
+        expect( test.test() ).toEqual( undefined );
+        test.hasSequence( [ 1, 2, 3 ] );
     });
 
     it( 'executes @after in a reverse order', () => {
         class A {
-            after : number[]
-            
             @after test(){
-                this.after.push( 1 )
+                testSequence( 3 ).call( this )
             }
         }
 
         @mixins( A )
-        class Test {
-            after = [];
-            
-            @after( function(){ this.after.push( 2 ) })
-            @after( function(){ this.after.push( 3 ) })
+        class Test extends TestMixin {            
+            @after( testSequence( 2 ) )
+            @after( testSequence( 1 ) )
             test(){
                 return 'test'
             }
@@ -86,39 +144,112 @@ describe( 'mixins as standalone classes', () => {
 
         const test = new Test();
         expect( test.test() ).toEqual( 'test' );
-        expect( test.after ).toEqual( [ 3,2,1 ] );
+        test.hasSequence( [ 1, 2, 3 ] );
     })
 
     it( 'executes @around in a proper order', () => {
         class A {
-            count : number[]
-            
             @around test(){
-                this.count.push( 1 )
-                return callNextMethod();
+                return testAround( 1 ).call( this );
             }
         }
 
         @mixins( A )
-        class Test {
-            count = [];
-            
-            @around( function(){
-                this.count.push( 2 )
-                return callNextMethod()
-            })
-            @around( function(){
-                this.count.push( 3 )
-                return callNextMethod()
-            })
+        class Test extends TestMixin {
+            @around( testAround( 2 ) )
+            @around( testAround( 3 ) )
             test(){
                 return 'test'
             }
         }
 
         const test = new Test();
-        expect( test.test() ).toEqual( 'test' );
-        expect( test.count ).toEqual( [ 1, 2, 3 ] );
+        expect( test.test() ).toEqual( [ 1, 2, 3, "test" ] );
+        test.hasSequence( [ 1, 2, 3 ] );
+    })
+});
+
+describe( 'Two base classes', () => {
+    it( 'before executed in order', () => {
+        class A {
+            @before( testSequence( 1 ) )
+            test(){}
+        }
+    
+        class B {
+            @before( testSequence( 2 ) )
+            test(){}
+        }
+    
+        @mixins( A, B )
+        class C extends TestMixin {
+            @before( testSequence( 3 ) )
+            test(){ return 'c'; }
+        }
+    
+        const c = new C();
+    
+        expect( c.test() ).toEqual( 'c' );
+        c.hasSequence([ 1, 2, 3 ]);    
+    });
+
+    it( 'after executed in order', () => {
+        class A {
+            @after( testSequence( 3 ) )
+            test(){}
+        }
+    
+        class B {
+            @after( testSequence( 2 ) )
+            test(){}
+        }
+    
+        @mixins( A, B )
+        class C extends TestMixin {
+            @after( testSequence( 1 ) )
+            test(){ return 'c'; }
+        }
+    
+        const c = new C();
+    
+        expect( c.test() ).toEqual( 'c' );
+        c.hasSequence([ 1, 2, 3 ]);    
+    });
+
+    it( 'before, after, around are executed in order', ()=>{
+        class A {
+            @before( testSequence( 1 ) )
+            @around( testAround( 4 ) )
+            @after( testSequence( 10 ) )
+            test(){
+                testSequence( 'never' ).call( this )
+            }
+        }
+    
+        class B {
+            @before( testSequence( 2 ) )
+            @around( testAround( 5 ) )
+            @after( testSequence( 9 ) )
+            test(){
+                testSequence( 'never' ).call( this )
+            }
+        }
+    
+        @mixins( A, B )
+        class C extends TestMixin {
+            @before( testSequence( 3 ) )
+            @around( testAround( 6 ) )
+            @after( testSequence( 8 ) )
+            test(){
+                testSequence( 7 ).call( this )
+                return 'c';
+            }
+        }
+    
+        const c = new C();
+    
+        expect( c.test() ).toEqual([ 4, 5, 6, 'c' ]);
+        c.hasSequence([ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]);
     })
 });
 
