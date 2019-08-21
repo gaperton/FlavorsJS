@@ -78,7 +78,15 @@ The general form of `@after`.
 
 ## Initialization
 
-### superMixins( this, a, b, ... )
+If mixins constructors can take arguments, semantic can become weird and unsafe. In this case, we will be required to manually call their constructors.
+
+If they only allowed to take no arguments, we may initialize them with a single generic call. And, we can use `extend mixins( A, B, C )` to call em automatically. Both `@mixins` and `extends mixins` can be typed to enforce this convention. The problem is, however, that it's too restrictive and we will still need classes.
+
+Finally, the first mixin's constructor might be allowed to take arguments. That, however, would force us to differentiate between mixin sorts, and an effect is generally the same as allowing the mix of classes + mixins.
+
+`extend mixins` allows for interesting effects (automatic initialization, lazy mixin merge), which will need to be investigated.
+
+### superMixins( this )
 
 Call all the mixins constrtuctors with a given set of arguments. Similar to the standard `super()`.
 
