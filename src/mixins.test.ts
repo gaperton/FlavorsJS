@@ -1,4 +1,4 @@
-import { mixins, before, after, doAfter, doAround, doBefore, around, callNextMethod } from './index'
+import { mixins, before, after, doAfter, doAround, doBefore, around, callNextMethod, join } from './index'
 import { applyNextMethod } from './combinations';
 import { isMethod } from '@babel/types';
 import { superMixins } from './mixture';
@@ -357,7 +357,36 @@ describe( 'diamond problem', () => {
         expect( d.log ).toEqual( 'ABCD' );
 
     })
-})
+});
+
+describe( 'join pattern', () => {
+    class A {
+        a = true
+    }
+
+    class B {
+        b = true
+    }
+
+    it( 'works', () => {
+        const C = join( A, B );
+        const c = new C();
+
+        expect( c.a ).toBe( true );
+        expect( c.b ).toBe( true );
+    });
+
+    it( 'can be extended', () => {
+        class C extends join( A, B ) {
+            c = true;
+        }
+
+        const c = new C();
+        expect( c.a ).toBe( true );
+        expect( c.b ).toBe( true );
+        expect( c.c ).toBe( true );
+    });
+});
 
 describe( 'design patterns', () => {
     it( 'attach the trace hook in a subtype', () => {
