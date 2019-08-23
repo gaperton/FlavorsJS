@@ -1,4 +1,4 @@
-import { applyNextMethod } from './index'
+import { mixin } from './index'
 
 export class TestMixin {
     sequence : any[]
@@ -21,10 +21,10 @@ export function testSequence( label ){
 }
 
 export function testAround( label ){
-    return function(){
+    return function( ...args ){
         this.sequence = ( this.sequence || [] ).concat([ label ]);
 
-        const next = applyNextMethod(),
+        const next = mixin.nextAround( ...args ),
              arr = Array.isArray( next ) ? next : [ next ];
         return [ label, ...arr ];
     }

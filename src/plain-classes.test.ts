@@ -1,11 +1,10 @@
-import { mixin, mixins, applyNextMethod, superMixins, before, after, doAfter, doAround, doBefore, around, callNextMethod, join } from './index'
+import { mixin, mixins, before, after, around, join } from './index'
 
 import { TestMixin, testAround, testSequence } from './test-commons'
 
 /**
  * Think about grouping some stuff.
  * 
- * mixin.super() 
  * mixin.applyNextAround()
  * mixin.nextAround( a, b, ... )
  * 
@@ -88,7 +87,7 @@ import { TestMixin, testAround, testSequence } from './test-commons'
         @mixin class B extends A {
             constructor(){
                 super();
-                superMixins( this );
+                mixin.super( this );
             }
         }
 
@@ -99,7 +98,7 @@ import { TestMixin, testAround, testSequence } from './test-commons'
  });
 
  describe( 'mix inheritance with mixins', () => {
-    it( 'Base class is not merged twice', () => {
+    it( 'Base class constructor not called twice', () => {
         class A extends TestMixin {
             constructor(){
                 super();
@@ -110,7 +109,7 @@ import { TestMixin, testAround, testSequence } from './test-commons'
         @mixins( A ) class B extends A {
             constructor(){
                 super();
-                superMixins( this );
+                mixin.super( this );
             }
         }
 

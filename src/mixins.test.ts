@@ -1,4 +1,4 @@
-import { mixins, applyNextMethod, superMixins, before, after, doAfter, doAround, doBefore, around, callNextMethod, join } from './index'
+import { mixins, mixin, before, after, around, join } from './index'
 
 import { TestMixin, testAround, testSequence } from './test-commons'
 
@@ -25,7 +25,7 @@ class ComplexMixin {
     }
 
     @around c(){
-        return 'ComplexMixin' + ( callNextMethod() || '' );
+        return 'ComplexMixin' + ( mixin.nextAround() || '' );
     }
 }
 
@@ -55,15 +55,15 @@ describe( 'mixins as standalone classes', () => {
 
     it( '@before and after are executed in order', () => {
         class Test extends TestMixin {
-            @doAfter( testSequence( 8 ) )
-            @doBefore( testSequence( 1 ) )
-            @doAfter( testSequence( 7 ) )
-            @doBefore( testSequence( 2 ) )
-            @doAfter( testSequence( 6 ) )
-            @doBefore( testSequence( 3 ) )
+            @after.do( testSequence( 8 ) )
+            @before.do( testSequence( 1 ) )
+            @after.do( testSequence( 7 ) )
+            @before.do( testSequence( 2 ) )
+            @after.do( testSequence( 6 ) )
+            @before.do( testSequence( 3 ) )
 
-            @doAround( testAround( 4 ) )
-            @doAround( testAround( 5 ) )
+            @around.do( testAround( 4 ) )
+            @around.do( testAround( 5 ) )
 
             test(){
                 return "test";
@@ -86,7 +86,7 @@ describe( 'single base class', () => {
 
         @mixins( A )
         class Test extends TestMixin {
-            @doBefore( testSequence( 2 ) )
+            @before.do( testSequence( 2 ) )
             @before test(){
                 testSequence( 3 ).call( this );
             }
@@ -106,8 +106,8 @@ describe( 'single base class', () => {
 
         @mixins( A )
         class Test extends TestMixin {            
-            @doAfter( testSequence( 2 ) )
-            @doAfter( testSequence( 1 ) )
+            @after.do( testSequence( 2 ) )
+            @after.do( testSequence( 1 ) )
             test(){
                 return 'test'
             }
@@ -127,8 +127,8 @@ describe( 'single base class', () => {
 
         @mixins( A )
         class Test extends TestMixin {
-            @doAround( testAround( 2 ) )
-            @doAround( testAround( 3 ) )
+            @around.do( testAround( 2 ) )
+            @around.do( testAround( 3 ) )
             test(){
                 return 'test'
             }
@@ -143,18 +143,18 @@ describe( 'single base class', () => {
 describe( 'Two base classes', () => {
     it( 'before executed in order', () => {
         class A {
-            @doBefore( testSequence( 1 ) )
+            @before.do( testSequence( 1 ) )
             test(){}
         }
     
         class B {
-            @doBefore( testSequence( 2 ) )
+            @before.do( testSequence( 2 ) )
             test(){}
         }
     
         @mixins( A, B )
         class C extends TestMixin {
-            @doBefore( testSequence( 3 ) )
+            @before.do( testSequence( 3 ) )
             test(){ return 'c'; }
         }
     
@@ -166,18 +166,18 @@ describe( 'Two base classes', () => {
 
     it( 'after executed in order', () => {
         class A {
-            @doAfter( testSequence( 3 ) )
+            @after.do( testSequence( 3 ) )
             test(){}
         }
     
         class B {
-            @doAfter( testSequence( 2 ) )
+            @after.do( testSequence( 2 ) )
             test(){}
         }
     
         @mixins( A, B )
         class C extends TestMixin {
-            @doAfter( testSequence( 1 ) )
+            @after.do( testSequence( 1 ) )
             test(){ return 'c'; }
         }
     
@@ -189,18 +189,18 @@ describe( 'Two base classes', () => {
 
     it( 'before, after, around are executed in order', ()=>{
         class A {
-            @doBefore( testSequence( 1 ) )
-            @doAround( testAround( 4 ) )
-            @doAfter( testSequence( 10 ) )
+            @before.do( testSequence( 1 ) )
+            @around.do( testAround( 4 ) )
+            @after.do( testSequence( 10 ) )
             test(){
                 testSequence( 'never' ).call( this )
             }
         }
     
         class B {
-            @doBefore( testSequence( 2 ) )
-            @doAround( testAround( 5 ) )
-            @doAfter( testSequence( 9 ) )
+            @before.do( testSequence( 2 ) )
+            @around.do( testAround( 5 ) )
+            @after.do( testSequence( 9 ) )
             test(){
                 testSequence( 'never' ).call( this )
             }
@@ -208,9 +208,9 @@ describe( 'Two base classes', () => {
     
         @mixins( A, B )
         class C extends TestMixin {
-            @doBefore( testSequence( 3 ) )
-            @doAround( testAround( 6 ) )
-            @doAfter( testSequence( 8 ) )
+            @before.do( testSequence( 3 ) )
+            @around.do( testAround( 6 ) )
+            @after.do( testSequence( 8 ) )
             test(){
                 testSequence( 7 ).call( this )
                 return 'c';
@@ -392,7 +392,7 @@ describe( 'design patterns', () => {
         @mixins( Base )
         class Subtype {
             constructor(){
-                superMixins( this );
+                mixin.super( this );
             }
 
             method(){
@@ -414,7 +414,7 @@ describe( 'design patterns', () => {
             }
 
             @around render(){
-                const nodes = callNextMethod();
+                const nodes = mixin.nextAround();
 
                 return '<div>' + nodes + '</div>';
             }

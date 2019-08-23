@@ -1,4 +1,5 @@
-import { Combination, Combinations, getAllMixtures, getMixture, mergeMixture, mixMethod, sealMethod, unfoldMixins, cloneAllMixtures } from './mixture';
+import { Combination, Combinations, getAllMixtures, getMixture, mergeMixture, mixMethod, sealMethod, unfoldMixins, cloneAllMixtures, superMixins } from './mixture';
+import { callNextMethod, applyNextMethod } from './combinations';
 
 function getMethodMixture( proto, mixtures, name ){
     const cached = mixtures[ name ];
@@ -69,6 +70,10 @@ export function mixin( Class : new ( ...args ) => any ){
     sealMixins( Class.prototype );
 }
 
+mixin.super = superMixins;
+mixin.nextAround = callNextMethod;
+mixin.applyNextAround = applyNextMethod;
+
 function sealMixins( proto ){
     if( proto !== Object.prototype && !proto.hasOwnProperty( '__appliedMixins__' )){
         const baseProto = Object.getPrototypeOf( proto );
@@ -95,14 +100,10 @@ function aspectDecorator( combination : Combination ){
             return desc;    
         }
 } 
-
-export const doAfter = aspectDecorator( Combinations.AFTER );
-export const doBefore = aspectDecorator( Combinations.BEFORE );
-export const doAround = aspectDecorator( Combinations.AROUND );
     
 function methodDecorator( combination : Combination )
 {
-    return ( object, name? : string, desc? : PropertyDescriptor ) => {
+    function decorator( object, name? : string, desc? : PropertyDescriptor ){
         const mixtures = getAllMixtures( object ),
             mixture = getMixture( mixtures, name );
 
@@ -110,6 +111,10 @@ function methodDecorator( combination : Combination )
         desc.value = sealMethod( mixture );
         return desc;
     }
+
+    decorator.do = aspectDecorator( combination );
+
+    return decorator;
 }
 
 export const after = methodDecorator( Combinations.AFTER );
