@@ -25,8 +25,6 @@ export function mixins( ...Mixins : Mixin<any>[] ){
         const target = Target.prototype,
             targetMixtures = cloneAllMixtures( target );
 
-
-        const baseProto 
         // Create flattened list of all unique mixins.
         const appliedMixins = unfoldMixins( target, Mixins );
         
