@@ -1,7 +1,6 @@
-import { mixins } from "./decorators";
+import { mixins, Mixin } from "./decorators";
 import { superMixins } from "./mixture";
 
-export type Mixin<T> = ( new () => T ) | T
 export function join<A, B>( a : Mixin<A>, b : Mixin<B> ) : new () => A & B
 export function join<A, B, C>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C> ) : new () => A & B & C
 export function join<A, B, C, D>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>, d : Mixin<D> ) : new () => A & B & C & D
@@ -11,14 +10,26 @@ export function join<A, B, C, D, E, F>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>
 /**
  * Create the class merging the list of mixins.
  */
-export function join( Base : new ( ...args ) => any, ...Mixins : any[] ) : any {
-    @mixins( ...Mixins )
-    class JoinedMixins extends Base {
+export function join( First : new ( ...args ) => any, ...Mixins : any[] ) : any {
+    @(mixins as any)( ...Mixins )
+    class JoinedMixins extends First {
         constructor( ...args ){
-            super(...args )
+            super( ...args );
             superMixins( this ); // Must not call the base class.
         }
     }
 
     return JoinedMixins;
+}
+
+// Decorator @mixin for merging the class with its base class
+export function mixin( Class : new ( ...args ) => any ){
+    const proto = Class.prototype,
+        baseProto = Object.getPrototypeOf( proto );
+
+    // If base class has no mixtures, it's a regular class and we have nothing to do.
+    if( !baseProto.__mixtures__ ) return;
+
+    
+
 }
