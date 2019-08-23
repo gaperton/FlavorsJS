@@ -106,7 +106,7 @@ import { TestMixin, testAround, testSequence } from './test-commons'
             }
         }
 
-        @mixins( A ) class B extends A {
+        @mixin.extends( A ) class B extends A {
             constructor(){
                 super();
                 mixin.super( this );
@@ -125,7 +125,7 @@ import { TestMixin, testAround, testSequence } from './test-commons'
             }
         }
 
-        @mixins( A ) class B extends A {
+        @mixin.extends( A ) class B extends A {
             test(){
                 testSequence( 2 ).call( this );
                 return 'b';

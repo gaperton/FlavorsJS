@@ -84,7 +84,7 @@ describe( 'single base class', () => {
             }
         }
 
-        @mixins( A )
+        @mixin.extends( A )
         class Test extends TestMixin {
             @before.do( testSequence( 2 ) )
             @before test(){
@@ -104,7 +104,7 @@ describe( 'single base class', () => {
             }
         }
 
-        @mixins( A )
+        @mixin.extends( A )
         class Test extends TestMixin {            
             @after.do( testSequence( 2 ) )
             @after.do( testSequence( 1 ) )
@@ -125,7 +125,7 @@ describe( 'single base class', () => {
             }
         }
 
-        @mixins( A )
+        @mixin.extends( A )
         class Test extends TestMixin {
             @around.do( testAround( 2 ) )
             @around.do( testAround( 3 ) )
@@ -152,7 +152,7 @@ describe( 'Two base classes', () => {
             test(){}
         }
     
-        @mixins( A, B )
+        @mixin.extends( A, B )
         class C extends TestMixin {
             @before.do( testSequence( 3 ) )
             test(){ return 'c'; }
@@ -175,7 +175,7 @@ describe( 'Two base classes', () => {
             test(){}
         }
     
-        @mixins( A, B )
+        @mixin.extends( A, B )
         class C extends TestMixin {
             @after.do( testSequence( 1 ) )
             test(){ return 'c'; }
@@ -206,7 +206,7 @@ describe( 'Two base classes', () => {
             }
         }
     
-        @mixins( A, B )
+        @mixin.extends( A, B )
         class C extends TestMixin {
             @before.do( testSequence( 3 ) )
             @around.do( testAround( 6 ) )
@@ -227,7 +227,7 @@ describe( 'Two base classes', () => {
 describe( 'simple target', ()=>{    
     it( 'merges primary-only source', () => {
         interface Target extends SimpleMixin {}
-        @mixins( SimpleMixin )
+        @mixin.extends( SimpleMixin )
         class Target {
             b(){
                 return 'Target';
@@ -243,7 +243,7 @@ describe( 'simple target', ()=>{
 
     it( 'merges mixed-combination source', () => {
         interface Target extends ComplexMixin {}
-        @mixins( ComplexMixin )
+        @mixin.extends( ComplexMixin )
         class Target {
             a(){
                 return 'Target';
@@ -270,7 +270,7 @@ describe( 'simple target', ()=>{
 
     it( 'merges two sources to empty target', () => {
         interface Target extends SimpleMixin, ComplexMixin {}
-        @mixins( SimpleMixin, ComplexMixin )
+        @mixin.extends( SimpleMixin, ComplexMixin )
         class Target {
         }
 
@@ -292,7 +292,7 @@ describe( 'diamond problem', () => {
             }
         }
 
-        @mixins( A )
+        @mixin.extends( A )
         class B {
             log : string
 
@@ -301,7 +301,7 @@ describe( 'diamond problem', () => {
             }
         }
 
-        @mixins( A )
+        @mixin.extends( A )
         class C {
             log : string
 
@@ -310,7 +310,7 @@ describe( 'diamond problem', () => {
             }
         }
 
-        @mixins( B, C )
+        @mixin.extends( B, C )
         class D {
             log = ''
 
@@ -365,7 +365,7 @@ describe( 'design patterns', () => {
             }
         }
 
-        @mixins( Base )
+        @mixin.extends( Base )
         class Subtype {
             trace = [];
 
@@ -389,7 +389,7 @@ describe( 'design patterns', () => {
         }
 
         interface Subtype extends Base {}
-        @mixins( Base )
+        @mixin.extends( Base )
         class Subtype {
             constructor(){
                 mixin.super( this );
@@ -421,7 +421,7 @@ describe( 'design patterns', () => {
         }
 
         interface ReactComponent extends ComponentMixin{}
-        @mixins( ComponentMixin )
+        @mixin.extends( ComponentMixin )
         class ReactComponent {
             render(){
                 return "something"

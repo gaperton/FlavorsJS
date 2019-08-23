@@ -18,13 +18,13 @@ While admiring the awesome work done by Howard I. Cannon on Flavors for MIT LISP
 
 ## API
 
-### @mixins( A, B, ... )
+### @mixin
 
-Merge mixins in the given order.
+Apply base class method combinations as if the inheritance would be the mixin
 
-### @mixins
+### @mixin.extends( A, B, ... )
 
-When `@mixins` decorator is called without arguments, apply base class method combinations as if the inheritance would be the mixin
+Merge mixins to the target class in the given order.
 
 ### @before method( a, b, ... ){ ... }
 
@@ -48,7 +48,7 @@ class B {
 }
 ```
 
-### @doBefore( aspect ) method( a, b, ... ){ ... }
+### @before.do( aspect ) method( a, b, ... ){ ... }
 
 The general form of `@before` attaching the before aspect to the given primary method.
 
@@ -72,7 +72,7 @@ class B {
 }
 ```
 
-### @doAfter( aspect ) method( a, b, ... ){ ... }
+### @after.do( aspect ) method( a, b, ... ){ ... }
 
 The general form of `@after`.
 
@@ -86,7 +86,7 @@ Finally, the first mixin's constructor might be allowed to take arguments. That,
 
 `extend mixins` allows for interesting effects (automatic initialization, lazy mixin merge), which will need to be investigated.
 
-### superMixins( this )
+### mixin.super( this )
 
 Call all the mixins constrtuctors with a given set of arguments. Similar to the standard `super()`.
 
@@ -120,21 +120,21 @@ class B {
 }
 ```
 
-### @doAround( aspect ) method( a, b, ... ){ ... }
+### @around.do( aspect ) method( a, b, ... ){ ... }
 
 The general form of `@around`.
 
-### applyNextMethod()
+### mixin.applyNextAround()
 
 Call the next method in chain with the original set of the arguments.
 
-### callNextMethod( a, b, ... )
+### mixin.nextAround( a, b, ... )
 
 Call the next method in chain with a different set of arguments.
 
 ## TODO: Properties combinations
 
-### @doAfterSet( fun ) prop
+### @after.set( fun ) prop
 
 Execute the given function after the value has changed.
 
@@ -155,7 +155,7 @@ class B {
 }
 ```
 
-### @doBeforeSet( fun ) prop
+### @before.set( fun ) prop
 
 Execute the given function before the value has changed.
 
@@ -176,7 +176,7 @@ class B {
 }
 ```
 
-### @doAroundSet( fun ) prop
+### @around.set( fun ) prop
 
 Tap into the property modification process.
 

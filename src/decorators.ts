@@ -70,6 +70,8 @@ export function mixin( Class : new ( ...args ) => any ){
     sealMixins( Class.prototype );
 }
 
+mixin.extends = mixins;
+
 mixin.super = superMixins;
 mixin.nextAround = callNextMethod;
 mixin.applyNextAround = applyNextMethod;
