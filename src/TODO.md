@@ -36,3 +36,29 @@ join
 
 
 
+### Idea
+
+```javascript
+// Pattern A
+@mixin class B extends A {}
+
+
+@mixin class C extends join( A, B ){}
+
+
+interface C extends B {}
+@mixins( B )
+class C extends A {
+    constructor(){
+        super();
+        superMixins( this );
+    }
+}
+
+interface C extends A, B {}
+@mixins( A, B ) class C {
+    constructor(){
+    super();
+    superMixins( this );
+}
+```

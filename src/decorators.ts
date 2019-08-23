@@ -40,6 +40,23 @@ export function mixins( ...Mixins : Function[] ){
     }
 }
 
+export function mixin( Class : new ( ...args ) => any ){
+    sealMixins( Class.prototype );
+}
+
+function sealMixins( proto ){
+    if( proto !== Object.prototype ){
+        const baseProto = Object.getPrototypeOf( proto );
+
+        if( !baseProto.hasOwnProperty( '__appliedMixins__' ) ){
+            sealMixins( baseProto );
+        }
+
+        const dec = mixins( baseProto );
+        dec( proto.constructor );
+    }
+}
+
 // Chainable decorator is the decorator with function as parameter.
 // @before( fun1 ) @before( fun2 ) method(){ ... }
 // In this case the method itself is a primary method and must be registered so.

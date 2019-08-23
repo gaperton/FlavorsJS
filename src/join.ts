@@ -11,10 +11,11 @@ export function join<A, B, C, D, E, F>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>
 /**
  * Create the class merging the list of mixins.
  */
-export function join( ...Mixins : any[] ) : any {
+export function join( Base : new ( ...args ) => any, ...Mixins : any[] ) : any {
     @mixins( ...Mixins )
-    class JoinedMixins {
-        constructor(){
+    class JoinedMixins extends Base {
+        constructor( ...args ){
+            super(...args )
             superMixins( this ); // Must not call the base class.
         }
     }
