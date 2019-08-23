@@ -22,26 +22,29 @@ export function mixins<A, B, C, D, E>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>,
 export function mixins<A, B, C, D, E, F>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>, d : Mixin<D>, e : Mixin<E>, f : Mixin<F> ) : ClassDecorator
 export function mixins( ...Mixins : Mixin<any>[] ){
     return Target => {
-        const target = Target.prototype,
-            targetMixtures = cloneAllMixtures( target );
+        mergeMixinsToProto( Target.prototype, Mixins );
+    }
+}
 
-        // Create flattened list of all unique mixins.
-        const appliedMixins = unfoldMixins( target, Mixins );
-        
-        for( let source of appliedMixins.reverse() ){
-            const sourceMixtures = getAllMixtures( source );
+function mergeMixinsToProto( target : any, Mixins : Mixin<any>[] ){
+    const targetMixtures = cloneAllMixtures( target );
 
-            for( let name of Object.keys( source ) ){
-                const desc = getPropertyDescriptor( source, name );
-                
-                if( typeof desc.value === 'function' && name !== 'constructor' ){
-                    const targetMixture = getMethodMixture( target, targetMixtures, name ),
-                            sourceMixture = getMethodMixture( source, sourceMixtures, name );
+    // Create flattened list of all unique mixins.
+    const appliedMixins = unfoldMixins( target, Mixins );
 
-                    mergeMixture( targetMixture, sourceMixture );
-                    target[ name ] = sealMethod( targetMixture );
-                }   
-            }
+    for( let source of appliedMixins.reverse() ){
+        const sourceMixtures = getAllMixtures( source );
+
+        for( let name of Object.keys( source ) ){
+            const desc = getPropertyDescriptor( source, name );
+            
+            if( typeof desc.value === 'function' && name !== 'constructor' ){
+                const targetMixture = getMethodMixture( target, targetMixtures, name ),
+                        sourceMixture = getMethodMixture( source, sourceMixtures, name );
+
+                mergeMixture( targetMixture, sourceMixture );
+                target[ name ] = sealMethod( targetMixture );
+            }   
         }
     }
 }
@@ -64,12 +67,13 @@ function sealMixins( proto ){
     if( proto !== Object.prototype ){
         const baseProto = Object.getPrototypeOf( proto );
 
-        if( !baseProto.hasOwnProperty( '__appliedMixins__' ) ){
-            sealMixins( baseProto );
-        }
+        if( baseProto !== Object.prototype ){
+            if( !baseProto.hasOwnProperty( '__appliedMixins__' ) ){
+                sealMixins( baseProto );
+            }
 
-        const dec = mixins( baseProto );
-        dec( proto.constructor );
+            mergeMixinsToProto( proto, [ baseProto ] );
+        }
     }
 }
 

@@ -21,15 +21,3 @@ export function join( First : new ( ...args ) => any, ...Mixins : any[] ) : any 
 
     return JoinedMixins;
 }
-
-// Decorator @mixin for merging the class with its base class
-export function mixin( Class : new ( ...args ) => any ){
-    const proto = Class.prototype,
-        baseProto = Object.getPrototypeOf( proto );
-
-    // If base class has no mixtures, it's a regular class and we have nothing to do.
-    if( !baseProto.__mixtures__ ) return;
-
-    
-
-}

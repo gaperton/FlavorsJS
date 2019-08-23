@@ -1,7 +1,5 @@
-import { mixins, before, after, doAfter, doAround, doBefore, around, callNextMethod, join } from './index'
-import { applyNextMethod } from './combinations';
-import { isMethod } from '@babel/types';
-import { superMixins } from './mixture';
+import { mixins, applyNextMethod, superMixins, before, after, doAfter, doAround, doBefore, around, callNextMethod, join } from './index'
+
 
 class SimpleMixin {
     a(){ return 'SimpleMixin'; }
