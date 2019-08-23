@@ -1,11 +1,41 @@
 # TODO
 
+- analyze conditions when it's safe to use mixins together with classes.
+- 
+
 (?)
 Consider the restriction that only the class with no-arguments-constructor can be a mixin.
-It assumes that regular inheritance might be needed.
+It assumes that regular inheritance might still be needed.
 (?)
 
 ## extends join( A, B, ... )
+
+The features of this pattern:
+
+- Automatic mixins members initialization, no way to make a mistake.
+- TS type is automatically inferred, no need to do manual declaration mergeing.
+- Impossible to mix classes with mixins.
+
+When it doesn't work without class decorator?
+
+- Method override won't merge combinations properly.
+
+Options:
+
+- Use it as a notation to define mixins. Forbid mixins to have regular base classes. Use `@mixin` decorator to make it explicit.
+
+    @mixin class A extends B {
+        
+    }
+
+    @mixin class A extends join( B, C, D ) {
+
+    }
+
+- Allow merging mixins to regular classes with a decorator. Disallow regular classes to be used as a mixin.
+
+    @mixins( C, D )
+    class A extends B 
 
 ### Definition
 

@@ -10,23 +10,31 @@ function getMethodMixture( proto, mixtures, name ){
     return mixture;
 }
 
+
+export type Mixin<T> = ( new () => T ) | T
+
 // Class decorator @mixins( A, B, ... )
-export function mixins( ...Mixins : Function[] ){
+export function mixins<A>( a : Mixin<A> ) : ClassDecorator
+export function mixins<A, B>( a : Mixin<A>, b : Mixin<B> ) : ClassDecorator
+export function mixins<A, B, C>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C> ) : ClassDecorator
+export function mixins<A, B, C, D>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>, d : Mixin<D> ) : ClassDecorator
+export function mixins<A, B, C, D, E>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>, d : Mixin<D>, e : Mixin<E> ) : ClassDecorator
+export function mixins<A, B, C, D, E, F>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>, d : Mixin<D>, e : Mixin<E>, f : Mixin<F> ) : ClassDecorator
+export function mixins( ...Mixins : Mixin<any>[] ){
     return Target => {
         const target = Target.prototype,
             targetMixtures = cloneAllMixtures( target );
 
+
+        const baseProto 
         // Create flattened list of all unique mixins.
         const appliedMixins = unfoldMixins( target, Mixins );
         
         for( let source of appliedMixins.reverse() ){
-            // BUG: Need to disable cachinf of the pre-merged mixtures,
-            // and traverse all the source mixins every time to solve diamond problem.
-            // __appliedMixins_ must contain the whole graph of mixins.
             const sourceMixtures = getAllMixtures( source );
 
-            for( let name of Object.getOwnPropertyNames( source ) ){
-                const desc = Object.getOwnPropertyDescriptor( source, name );
+            for( let name of Object.keys( source ) ){
+                const desc = getPropertyDescriptor( source, name );
                 
                 if( typeof desc.value === 'function' && name !== 'constructor' ){
                     const targetMixture = getMethodMixture( target, targetMixtures, name ),
@@ -36,8 +44,18 @@ export function mixins( ...Mixins : Function[] ){
                     target[ name ] = sealMethod( targetMixture );
                 }   
             }
-        }    
+        }
     }
+}
+
+function getPropertyDescriptor( source : object, name : string ) : PropertyDescriptor {
+    let desc;
+
+    for( let proto = source; proto && !desc; proto = Object.getPrototypeOf( proto )){
+        desc = Object.getOwnPropertyDescriptor( proto, name );
+    }
+
+    return desc;
 }
 
 // Chainable decorator is the decorator with function as parameter.
