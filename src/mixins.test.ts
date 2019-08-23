@@ -1,5 +1,6 @@
 import { mixins, applyNextMethod, superMixins, before, after, doAfter, doAround, doBefore, around, callNextMethod, join } from './index'
 
+import { TestMixin, testAround, testSequence } from './test-commons'
 
 class SimpleMixin {
     a(){ return 'SimpleMixin'; }
@@ -25,36 +26,6 @@ class ComplexMixin {
 
     @around c(){
         return 'ComplexMixin' + ( callNextMethod() || '' );
-    }
-}
-
-class TestMixin {
-    sequence : any[]
-    
-    hasSequence( arr ){
-        expect( this.sequence ).toEqual( arr );
-        return this;
-    }
-
-    cleanup(){
-        this.sequence = [];
-        return this;
-    }
-}
-
-function testSequence( label ){
-    return function(){
-        this.sequence = ( this.sequence || [] ).concat([ label ]);
-    }
-}
-
-function testAround( label ){
-    return function(){
-        this.sequence = ( this.sequence || [] ).concat([ label ]);
-
-        const next = applyNextMethod(),
-             arr = Array.isArray( next ) ? next : [ next ];
-        return [ label, ...arr ];
     }
 }
 

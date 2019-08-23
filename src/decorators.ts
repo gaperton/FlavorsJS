@@ -22,6 +22,10 @@ export function mixins<A, B, C, D, E>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>,
 export function mixins<A, B, C, D, E, F>( a : Mixin<A>, b : Mixin<B>, c : Mixin<C>, d : Mixin<D>, e : Mixin<E>, f : Mixin<F> ) : ClassDecorator
 export function mixins( ...Mixins : Mixin<any>[] ){
     return Target => {
+        const baseProto = Object.getPrototypeOf( Target.prototype );
+        
+        baseProto === Object.prototype || Mixins.unshift( baseProto );
+        
         mergeMixinsToProto( Target.prototype, Mixins );
     }
 }
@@ -33,6 +37,8 @@ function mergeMixinsToProto( target : any, Mixins : Mixin<any>[] ){
     const appliedMixins = unfoldMixins( target, Mixins );
 
     for( let source of appliedMixins.reverse() ){
+        sealMixins( source );
+
         const sourceMixtures = getAllMixtures( source );
 
         for( let name of Object.keys( source ) ){
@@ -64,15 +70,12 @@ export function mixin( Class : new ( ...args ) => any ){
 }
 
 function sealMixins( proto ){
-    if( proto !== Object.prototype ){
+    if( proto !== Object.prototype && !proto.hasOwnProperty( '__appliedMixins__' )){
         const baseProto = Object.getPrototypeOf( proto );
-
+        
         if( baseProto !== Object.prototype ){
-            if( !baseProto.hasOwnProperty( '__appliedMixins__' ) ){
-                sealMixins( baseProto );
-            }
-
-            mergeMixinsToProto( proto, [ baseProto ] );
+            sealMixins( baseProto );
+            mergeMixinsToProto( proto, [ baseProto ] );    
         }
     }
 }

@@ -17,9 +17,9 @@ export function cloneAllMixtures( proto ) : MethodsMixtures {
 export function unfoldMixins( target, Mixins : ( object | Function )[] ) : any[] {
     const appliedMixins = target.__appliedMixins__ || ( target.__appliedMixins__ = [] );
 
-    for( let Mixin of Mixins ){
-        const source = typeof Mixin === 'function' ? Mixin.prototype : Mixin;
+    const sources = Mixins.map( Mixin => typeof Mixin === 'function' ? Mixin.prototype : Mixin );
 
+    for( let source of sources ){
         if( appliedMixins.indexOf( source ) < 0 ) {
             const sourceMixins = source.__appliedMixins__ || [];
     
@@ -34,12 +34,8 @@ export function unfoldMixins( target, Mixins : ( object | Function )[] ) : any[]
     }
 
     // Base class constructor _must not_ be added to the list or there's a risk it will be called twice.
-    target.__constructors__ = Mixins
-        .map(
-            x => typeof x === 'function' ? x :
-                 Object.getPrototypeOf( target ) !== x ? x.constructor :
-                 null
-        )
+    target.__constructors__ = sources
+        .map( x => x.isPrototypeOf( target ) ? null : x.constructor )
         .filter( x => x );
 
     return appliedMixins;
