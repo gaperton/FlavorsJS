@@ -4,45 +4,145 @@ Mixin engine for modern JS and TypeScript inspired by Howard I. Cannon work for 
 
 write something about origins of Flawors and problems it solves
 
-## Design considerations
-
-While admiring the awesome work done by Howard I. Cannon on Flavors for MIT LISP Machine and the LISP community in general during the design of CLOS, we don't have an intent to dramatically change the way how JS developer write his code.
-
-- It must work with both JavaScript and TypeScript naturally, being felt like an evolutionary step forward from traditional JS classes and mixins.
-- It must augment the standard JS class models, not substitute it.
-- It must utilize TypeScript typeckecking to a maximum possible degree.
-
-# Installation
+## Installation
 
 `npm install mixin-flavors`
 
-## API
+## Basic usage
 
-### @mixin
+In its basic use case, FlavorsJS gives you multiple inheritance in JS.
 
-Apply base class method combinations as if the inheritance would be the mixin
+### join( Base, B, ... )
 
-### @mixin.extends( A, B, ... )
+Produce a new class which is a combination of given classes. Resulting class will be the proper subclass of `Base` merging in the prototype
+methods of other classes. Resulting class constructor will call the `Base` constructor with a same set of arguments, and mixin constructors with no arguments in a same order mixins are mentioned (??).
 
-Merge mixins to the target class in the given order.
-
-### @before method( a, b, ... ){ ... }
-
-Execute the given function before the method will be called. Equivalent to `@doBefore( function( a, b, ... ){...} ) method(){}`
+`join` operation is meant to be used in conjunction with `class extends` to implement multiple inheritance.
 
 ```javascript
 class A {
-    ...
-
-    @before componentWillMount(){
-        this.something = "Hi";
+    a = 1;
+    f(){
+        return 'a';
     }
 }
 
-@mixins( A )
 class B {
+    b = 1;
+
+    g(){
+        return 'b';
+    }
+}
+
+class C extends join( A, B ){
+    g(){
+        return 'c'
+    }
+}
+
+const c = new C();
+
+expect( c.a ).toBe( 1 )
+expect( c.b ).toBe( 1 )
+expect( c.f() ).toBe( 'a' )
+expect( c.g() ).toBe( 'c' )
+```
+
+### @mixin.extends( A, B, ... )
+
+Merge methods of given classes to the existing class definition.
+
+Use `mixin.super( this )` to call all the mixins constructors with no arguments, or call them inidividually with `A.call( this )`, `B.call( this )`, etc.
+
+```javascript
+class A {
+    a = 1;
+
+    f(){
+        return 'a';
+    }
+}
+
+class B {
+    b = 1;
+
+    g(){
+        return 'b';
+    }
+}
+
+@mixin.extends( A, B )
+class C {
+    constructor(){
+        mixin.super( this );
+    }
+
+    g(){
+        return 'c'
+    }
+}
+
+const c = new C();
+
+expect( c.a ).toBe( 1 )
+expect( c.b ).toBe( 1 )
+expect( c.f() ).toBe( 'a' )
+expect( c.g() ).toBe( 'c' )
+```
+
+## Advanced usage: method combinations
+
+FlavorsJS implements _method combinations_ as found in Common LISP Object System and Flavors system from MIT LISP Machine.
+Combinations are special rules for merging methods with a same name found in different mixins. There are four combinations available:
+
+- `primary` methods, the most common combination demonstrated in Basic Usage section. Every method is _primary_ by default and when there are many of them coming from mixins the forst one is taken. Primary method in a subclass overrides primary methods in base classes. That's how the mixins should work according to a common knowledge. 
+- `before` methods, which are a hooks executed before the primary method in _the same order_ as they appear in mixins list.
+- `after` methods, which are a hooks executed after the primary method in _the opposite order_ as they appear in mixins list.
+- `around` methods, which wrap the primary method calls.
+
+In order for method combinations to work, all target class declaration must be preceded with `@mixin` decorator or use `@mixin.extends` option to merge mixins.
+
+When using `@mixin` decorator a base class is treated just like another mixin, so it's possible to use standard `class extends` together with `@mixin`/`@mixin.extends` decorator and all method combinations will be aplied properly. Also, it's possible to add method combinations is a subclass or mixin target.
+
+### @before method( a, b, ... ){ ... }
+
+Execute the given function before the method will be called. Receives the same set of arguments, the return value is ignored.
+If there are many `before` methods coming from different mixins, they will be executed in the same order as they appear in mixins.
+
+```javascript
+class ExtendState {
+    @after componentWillMount(){
+        this.state.something = "Hi";
+    }
+}
+
+@mixin class B extends join( React.Component, ExtendState ){
     componentWillMount(){
-        this.state = { text : this.something };
+        this.state = { text : 'Hello' };
+    }
+    ...
+}
+
+// or, as an alternative
+@mixin.extends( ExtendState )
+class B extends React.Component {
+    componentWillMount(){
+        this.state = { text : 'Hello' };
+    }
+    ...
+}
+
+// or, as another alternative
+@mixin class ExtendState extends React.Component{
+    @after componentWillMount(){
+        this.state.something = "Hi";
+    }
+}
+
+@mixin class B extends ExtendState {
+    componentWillMount(){
+        this.state = { text : 'Hello' };
     }
     ...
 }
@@ -50,22 +150,35 @@ class B {
 
 ### @before.do( aspect ) method( a, b, ... ){ ... }
 
-The general form of `@before` attaching the before aspect to the given primary method.
+The generalized form of `@before` attaching the before aspect represented as function to the given primary method. Think of it as a single-function mixins.
+
+```javascript
+function extendState(){
+    this.state.something = "Hi";
+}
+
+@mixin class B extends React.Component{
+    @before.do( extendState )
+    componentWillMount(){
+        this.state = { text : 'Hello' };
+    }
+    ...
+}
+```
 
 ### @after method( a, b, ... ){ ... }
 
-Execute the given function after the method will be called. Works similar to before.
+Execute the given function after the method will be called. Receives the same set of arguments, the return value is ignored.
+If there are many `after` methods coming from different mixins, they will be executed in the opposite order as they appear in mixins.
 
 ```javascript
-@mixins( Events )
-class A {
+@mixin class EventfulComponent extends Messenger {
     @after componentWillUnmount(){
         this.stopListening()
     }
 }
 
-@mixins( A )
-class B {
+class MyComponent extends join( React.Component, EventfulComponent ) {
     componentWillUnmount(){
         console.log( 'Unmounting' );
     }
@@ -74,44 +187,34 @@ class B {
 
 ### @after.do( aspect ) method( a, b, ... ){ ... }
 
-The general form of `@after`.
+The generalized form of `@after` attaching the after aspect represented as function to the given primary method. Think of it as a single-function mixins.
 
-## Initialization
+```javascript
+function unsubscribe(){
+    this.stopListening()
+}
 
-If mixins constructors can take arguments, semantic can become weird and unsafe. In this case, we will be required to manually call their constructors.
-
-If they only allowed to take no arguments, we may initialize them with a single generic call. And, we can use `extend mixins( A, B, C )` to call em automatically. Both `@mixins` and `extends mixins` can be typed to enforce this convention. The problem is, however, that it's too restrictive and we will still need classes.
-
-Finally, the first mixin's constructor might be allowed to take arguments. That, however, would force us to differentiate between mixin sorts, and an effect is generally the same as allowing the mix of classes + mixins.
-
-`extend mixins` allows for interesting effects (automatic initialization, lazy mixin merge), which will need to be investigated.
-
-### mixin.super( this )
-
-Call all the mixins constrtuctors with a given set of arguments. Similar to the standard `super()`.
-
-## `around` method combination
+@mixins class MyComponent extends join( React.Component, Messenger ) {
+    
+    @after.do( unsubscribe )
+    componentWillUnmount(){
+        console.log( 'Unmounting' );
+    }
+}
+```
 
 ### @around method( a, b, ... ){ ... }
 
-Wrap the method call into the given function. The original method can be called with `applyNextMethod()` and `callNextMethod( a, b, ... )`.
+Wrap the method call into the given function. The original method can be called with `mixin.nextMethod( a, b, ... )` or  `mixin.applyNextMethod()` to call it with the original set of arguments.
 
 ```javascript
 class A {
-    ...
-
-    @around(
-        function( nextProps ){
-            return applyNextMethod() && nextProps.a !== this.props.a;
-        }
-    )
-    shouldComponentUpdate( nextProps ){
-        return true;
+    @around shouldComponentUpdate( nextProps ){
+        return applyNextMethod() && nextProps.a !== this.props.a;
     }
 }
 
-@mixins( A )
-class B {
+@mixin class B extends join( React.Component, A ){
     ...
 
     shouldComponentUpdate( nextProps ){
@@ -122,15 +225,28 @@ class B {
 
 ### @around.do( aspect ) method( a, b, ... ){ ... }
 
-The general form of `@around`.
+The generalized form of `@around`.
 
-### mixin.applyNextAround()
+```javascript
+class A {
+    @around.do(
+        function( nextProps ){
+            return mixin.applyNextMethod() && nextProps.a !== this.props.a;
+        }
+    )
+    shouldComponentUpdate( nextProps ){ // Provide the default shouldComponentUpdate implementation.
+        return true;
+    }
+}
 
-Call the next method in chain with the original set of the arguments.
+@mixin class B extends join( React.Component, A ){
+    ...
 
-### mixin.nextAround( a, b, ... )
-
-Call the next method in chain with a different set of arguments.
+    shouldComponentUpdate( nextProps ){
+        return nextProps.b !== this.props.b;
+    }
+}
+```
 
 ## TODO: Properties combinations
 
@@ -196,54 +312,3 @@ class B {
     }
 }
 ```
-
-
-## Interaction with extended classes
-
-That can create a mess when combined with inheritance. Possible options are:
-
-- Don't work with inheritance at all. Throw exceptions if inheritance is detected. That would seriously restrict FlavorJS applications.
-- Treat inheritance as a special case of mixins, preserving the FlavorsJS semantic.
-
-We're going to explore the second option.
-
-To do that, we need to inspect the target's prototype if it have another prototype different from `Object.prototype`. And if it does,
-perform the merge in a same way we do with mixins.
-
-(?!)
-What if we will have a base class with a constructor performing the lazy application of the mixins across the prototype chain?
-It would guarantee from errors.
-(?!)
-
-An open question is what to do with members visible across the prototype chain. The valid behavior would be to traverse them, as it seems to be the single correct option to work with traditional class hierarchies.
-
-There's a special case where one of the base classes in a chain has mixins, was extended with a plain class, and then is extended with mixins.
-
-### Test cases
-
-The bottom line from analysis the use cases below is that the solution is simple. Inheritance must be treated as a mixin merge operation, which must be applied as a first mixin.
-
-Inheritance chain itself must be added to appliedMixins as an each of the case classes can be used as mixin. Inheritance of the plain classes are ok.
-
-Usage of subclasses as a mixin source is okay too, once it's properly mixed in himself. For the purposes of PoC, all prototype members can be copied. Plain class hierarchies can be a mixin source once all the prototype chain is traversed. One thing won't work, however. *Methods with `super` calls cannot be properly merged.* Old-school base class method call will work.
-
-#### Plain base class A
-
-- A extended by B with aspects.
-- B extends A, C extends B with aspects.
-- A extended by B with mixins.
-
-For that to work, *method merge operation must look for primary methods from the whole prototype chain.* _Will not work without @mixins_ as the appliedMixins needs to be set. (?) may be make it a different decorator (?)
-
-#### Base class with aspects
-
-- A with aspects extended by plain class B. _That will work if methods with aspects are not overriden in B_. *@mixins decorator call is required, and it should reseal aspects with new primary methods from B*.
-- A with aspects extended by class B with aspects. _If aspect is overriden by primary, it won't work_. *Aspects in a subclass must be merged from mixtures in a base class. @mixins must check all primary methods of B and reseal them*.
-- A with aspects extended by class B with mixins. *@mixins must merge A as a mixin first. A must be added to the appliedMixins list and excluded from mixins merge*
-
-Won't work without @mixins.
-
-#### Base class with mixins
-
-- A extended by B with mixins. Applying the merge as if A is the first mixin.
-- A extended by B with aspects. Same as 2.2, but _appliedMixins_ has to be transferred.
