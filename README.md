@@ -194,7 +194,7 @@ function unsubscribe(){
     this.stopListening()
 }
 
-@mixins class MyComponent extends join( React.Component, Messenger ) {
+@mixin class MyComponent extends join( React.Component, Messenger ) {
     
     @after.do( unsubscribe )
     componentWillUnmount(){
@@ -256,7 +256,7 @@ Execute the given function after the value has changed.
 
 ```javascript
 class Observer {
-    @doAfterSet( function(){
+    @after.set( function(){
         console.log( `I see you, ${ this.value }!` );
     }) value;
 }
@@ -277,7 +277,7 @@ Execute the given function before the value has changed.
 
 ```javascript
 class Observer {
-    @doBeforeSet( function( x ){
+    @before.set( function( x ){
         console.log( `I see you last time, ${ x }!` );
     }) value;
 }
@@ -298,7 +298,7 @@ Tap into the property modification process.
 
 ```javascript
 class Observer {
-    @doAroundSet( function( x ){
+    @around.set( function( x ){
         callNextFunction( Number( x ) );
     }) value;
 }
