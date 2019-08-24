@@ -1,6 +1,6 @@
 {
   "name": "mixin-flavors",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "LISP-flavored mixins and object system for JS",
   "main": "lib/index.js",
   "repository": "https://github.com/gaperton/FlavorsJS.git",
