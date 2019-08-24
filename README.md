@@ -261,7 +261,7 @@ class Observer {
     }) value;
 }
 
-@mixins( Observer )
+@mixin.extends( Observer )
 class B {
     ...
 
@@ -282,7 +282,7 @@ class Observer {
     }) value;
 }
 
-@mixins( Observer )
+@mixin.extends( Observer )
 class B {
     ...
 
@@ -303,7 +303,7 @@ class Observer {
     }) value;
 }
 
-@mixins( Observer )
+@mixin.extends( Observer )
 class B {
     ...
 
