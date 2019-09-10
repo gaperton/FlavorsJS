@@ -1,5 +1,7 @@
 export declare function getAllMixtures(proto: any): MethodsMixtures;
-export declare function canApplyMixin(target: any, source: any): boolean;
+export declare function cloneAllMixtures(proto: any): MethodsMixtures;
+export declare function unfoldMixins(target: any, Mixins: (object | Function)[]): any[];
+export declare function superMixins(self: any, ...args: any[]): void;
 declare type MethodsMixtures = {
     [methodName: string]: Mixture;
 };
