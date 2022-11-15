@@ -12,7 +12,7 @@ function getMethodMixture( proto, mixtures, name ){
 }
 
 
-export type Mixin<T> = ( new () => T ) | T
+export type Mixin<T> = ( new () => T ) | ( abstract new () => T ) | T
 
 // Class decorator @mixins( A, B, ... )
 export function mixins<A>( a : Mixin<A> ) : ClassDecorator
@@ -42,8 +42,9 @@ function mergeMixinsToProto( target : any, Mixins : Mixin<any>[] ){
 
         const sourceMixtures = getAllMixtures( source );
 
-        for( let name of Object.keys( source ) ){
-            const desc = getPropertyDescriptor( source, name );
+        const descriptors = Object.getOwnPropertyDescriptors( source );
+        for( let name of Object.keys( descriptors ) ){
+            const desc = descriptors[name];
             
             if( typeof desc.value === 'function' && name !== 'constructor' ){
                 const targetMixture = getMethodMixture( target, targetMixtures, name ),

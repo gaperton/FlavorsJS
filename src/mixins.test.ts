@@ -334,7 +334,11 @@ describe( 'join pattern', () => {
     }
 
     class B {
-        b = true
+        // b = true
+        b;
+        _constructor() {
+            this.b = true;
+        }
     }
 
     it( 'works', () => {
@@ -381,7 +385,11 @@ describe( 'design patterns', () => {
 
     it( 'attach the trace hook in a base type', () => {
         class Base {
-            trace = [];
+            // trace = [];
+            trace;
+            _constructor(){
+                this.trace = [];
+            }
 
             @after method(){
                 this.trace.push( 'Base' );

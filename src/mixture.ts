@@ -35,7 +35,10 @@ export function unfoldMixins( target, Mixins : ( object | Function )[] ) : any[]
 
     // Base class constructor _must not_ be added to the list or there's a risk it will be called twice.
     target.__constructors__ = sources
-        .map( x => x.isPrototypeOf( target ) ? null : x.constructor )
+        .map( x => {
+            if (x.isPrototypeOf(target)) return null;
+            return x["_constructor"] ?? null;
+        })
         .filter( x => x );
 
     return appliedMixins;
