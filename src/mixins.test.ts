@@ -443,3 +443,72 @@ describe( 'design patterns', () => {
         expect( t.render() ).toEqual( '<div>something</div>' );
     })
 });
+
+describe( 'inheritance chains', () => {
+   it( 'have a long inheritance', () => {
+       abstract class Base1 {
+           public method1() { return 1; }
+           public overridden() { return 1; }
+       }
+       abstract class Base2 extends Base1 {
+           public method2() { return 2; }
+           public overridden() { return 2; }
+       }
+       abstract class Base3 extends Base2 {
+           public method3() { return 3; }
+           public overridden() { return 3; }
+       }
+       abstract class Base4 extends Base3 {
+           public method4() { return 4; }
+           public overridden() { return 4; }
+       }
+       
+       class Mixin1 {
+           public mixed1() { return "m1"; }
+       }
+       
+       @mixins(Mixin1)
+       class A extends Base4 {
+           public methodA() { return "a" };
+       }
+       interface A extends Mixin1 {}
+       
+       var a = new A();
+       expect( a.overridden() ).toEqual( 4 );
+       expect( a.method1() ).toEqual( 1 );
+       expect( a.method2() ).toEqual( 2 );
+       expect( a.method3() ).toEqual( 3 );
+       expect( a.method4() ).toEqual( 4 );
+       expect( a.methodA() ).toEqual( "a" );
+       expect( a.mixed1() ).toEqual( "m1" );
+   });
+
+   it( 'base class and inheritance in mixin', () => {
+       abstract class Base1 {
+           public method1() { return 1; }
+       }
+       
+       class Mixin1 {
+           public mixed1() { return "m1"; }
+           public mixedOverride() { return "1"; }
+       }
+       
+       class Mixin2 extends Mixin1 {
+           public mixed2() { return "m2"; }
+           public mixedOverride() { return "2"; }
+       }
+       
+       @mixins(Mixin2)
+       class A extends Base1 {
+           public methodA() { return "a" };
+       }
+       interface A extends Mixin2 {}
+       
+       var a = new A();
+       expect( a.method1() ).toEqual( 1 );
+       expect( a.methodA() ).toEqual( "a" );
+       expect( a.mixed1() ).toEqual( "m1" );
+       expect( a.mixed2() ).toEqual( "m2" );
+       expect( a.mixedOverride() ).toEqual( "2" );
+   });
+});

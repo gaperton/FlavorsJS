@@ -15,7 +15,9 @@ export function cloneAllMixtures( proto ) : MethodsMixtures {
 }
 
 export function unfoldMixins( target, Mixins : ( object | Function )[] ) : any[] {
-    const appliedMixins = target.__appliedMixins__ || ( target.__appliedMixins__ = [] );
+    const appliedMixins = target.hasOwnProperty("__appliedMixins__") 
+        ? target.__appliedMixins__ 
+        : ( target.__appliedMixins__ = [] );
 
     const sources = Mixins.map( Mixin => typeof Mixin === 'function' ? Mixin.prototype : Mixin );
 

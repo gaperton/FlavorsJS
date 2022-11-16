@@ -57,16 +57,6 @@ function mergeMixinsToProto( target : any, Mixins : Mixin<any>[] ){
     }
 }
 
-function getPropertyDescriptor( source : object, name : string ) : PropertyDescriptor {
-    let desc;
-
-    for( let proto = source; proto && !desc; proto = Object.getPrototypeOf( proto )){
-        desc = Object.getOwnPropertyDescriptor( proto, name );
-    }
-
-    return desc;
-}
-
 export function mixin( Class : new ( ...args ) => any ){
     sealMixins( Class.prototype );
 }
