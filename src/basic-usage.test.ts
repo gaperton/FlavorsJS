@@ -4,13 +4,19 @@ describe( 'basic usage', () => {
     it('uses join to implement multiple inheritance', () => {
         class A {
             a = 1;
+            
             f(){
                 return 'a';
             }
         }
         
         class B {
-            b = 1;
+            // b = 1;
+            b;
+            
+            _constructor() {
+                this.b = 1;
+            }
         
             g(){
                 return 'b';
@@ -33,15 +39,27 @@ describe( 'basic usage', () => {
     
     it( 'uses mixin.extend to implement multiple inheritance', () => {
         class A {
-            a = 1;
+            // a = 1;
+            a;
+            
+            _constructor() {
+                this.a = 1;
+            }
+            
             f(){
                 return 'a';
             }
         }
         
         class B {
-            b = 1;
-        
+            // b = 1;
+            b;
+
+            _constructor() {
+                this.b = 1;
+            }
+
+
             g(){
                 return 'b';
             }
